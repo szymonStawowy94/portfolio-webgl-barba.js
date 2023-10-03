@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
+import fragment from './shaders/fragment.glsl';
+import vertex from './shaders/vertex.glsl';
 
 export default class Sketch{
     constructor(options) {
@@ -8,7 +10,9 @@ export default class Sketch{
         this.height = this.container.offsetHeight;
         this.camera = new THREE.PerspectiveCamera( 70, this.width / this.height, 0.01, 10 );
         this.camera.position.z = 1;
-        this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+        this.renderer = new THREE.WebGLRenderer( {
+            antialias: true, alpha: true
+        } );
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize( this.width, this.height );
 
@@ -36,8 +40,23 @@ export default class Sketch{
     }
 
     addObjects() {
-        this.geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-        this.material = new THREE.MeshNormalMaterial();
+        // this.geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+        this.geometry = new THREE.PlaneGeometry( 0.5, 0.5 );
+        // this.geometry = new THREE.SphereGeometry( 0.2, 30,  30 );
+        // this.material = new THREE.MeshNormalMaterial();
+        // this.material = new THREE.MeshBasicMaterial({
+        //     color: 0xfff000
+        // });
+        // this.material = new THREE.MeshLambertMaterial()
+
+        this.material = new THREE.ShaderMaterial({
+            uniforms: {
+                time: {value: 1.0},
+                resolution: { value: new THREE.Vector2()}
+            },
+            vertexShader: vertex,
+            fragmentShader: fragment,
+        })
 
         this.mesh = new THREE.Mesh( this.geometry, this.material );
         this.scene.add( this.mesh );

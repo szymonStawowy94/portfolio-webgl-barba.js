@@ -37829,7 +37829,11 @@ var OrbitControls = /*#__PURE__*/function (_EventDispatcher) {
   return _createClass(OrbitControls);
 }(_three.EventDispatcher);
 exports.OrbitControls = OrbitControls;
-},{"three":"node_modules/three/build/three.module.js"}],"app.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js"}],"shaders/fragment.glsl":[function(require,module,exports) {
+module.exports = "#define GLSLIFY 1\nvoid main() {\n    gl_FragColor = vec4(1.,1.,0.,1.);\n}";
+},{}],"shaders/vertex.glsl":[function(require,module,exports) {
+module.exports = "#define GLSLIFY 1\nvoid main() {\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}";
+},{}],"app.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -37838,6 +37842,9 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = void 0;
 var THREE = _interopRequireWildcard(require("three"));
 var _OrbitControls = require("three/examples/jsm/controls/OrbitControls.js");
+var _fragment = _interopRequireDefault(require("./shaders/fragment.glsl"));
+var _vertex = _interopRequireDefault(require("./shaders/vertex.glsl"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
@@ -37855,7 +37862,8 @@ var Sketch = /*#__PURE__*/function () {
     this.camera = new THREE.PerspectiveCamera(70, this.width / this.height, 0.01, 10);
     this.camera.position.z = 1;
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true
+      antialias: true,
+      alpha: true
     });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(this.width, this.height);
@@ -37884,8 +37892,27 @@ var Sketch = /*#__PURE__*/function () {
   }, {
     key: "addObjects",
     value: function addObjects() {
-      this.geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-      this.material = new THREE.MeshNormalMaterial();
+      // this.geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+      this.geometry = new THREE.PlaneGeometry(0.5, 0.5);
+      // this.geometry = new THREE.SphereGeometry( 0.2, 30,  30 );
+      // this.material = new THREE.MeshNormalMaterial();
+      // this.material = new THREE.MeshBasicMaterial({
+      //     color: 0xfff000
+      // });
+      // this.material = new THREE.MeshLambertMaterial()
+
+      this.material = new THREE.ShaderMaterial({
+        uniforms: {
+          time: {
+            value: 1.0
+          },
+          resolution: {
+            value: new THREE.Vector2()
+          }
+        },
+        vertexShader: _vertex.default,
+        fragmentShader: _fragment.default
+      });
       this.mesh = new THREE.Mesh(this.geometry, this.material);
       this.scene.add(this.mesh);
     }
@@ -37905,7 +37932,7 @@ exports.default = Sketch;
 new Sketch({
   domElement: document.getElementById('container')
 });
-},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js"}],"../../Users/sstaw/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shaders/fragment.glsl":"shaders/fragment.glsl","./shaders/vertex.glsl":"shaders/vertex.glsl"}],"../../Users/sstaw/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -37930,7 +37957,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60936" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55075" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
