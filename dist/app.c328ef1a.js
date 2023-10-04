@@ -37830,9 +37830,9 @@ var OrbitControls = /*#__PURE__*/function (_EventDispatcher) {
 }(_three.EventDispatcher);
 exports.OrbitControls = OrbitControls;
 },{"three":"node_modules/three/build/three.module.js"}],"shaders/fragment.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nvoid main() {\n    gl_FragColor = vec4(1.,1.,0.,1.);\n}";
+module.exports = "#define GLSLIFY 1\nvarying float pulse;\nvoid main() {\n    gl_FragColor = vec4(1.,pulse,0.,1.);\n}";
 },{}],"shaders/vertex.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nvoid main() {\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying float pulse;\nvoid main() {\n    vec3 newPosition = position;\n    newPosition.z = 0.1*sin(length(position)*30. + time);\n    pulse = newPosition.z;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}";
 },{}],"app.js":[function(require,module,exports) {
 "use strict";
 
@@ -37893,7 +37893,8 @@ var Sketch = /*#__PURE__*/function () {
     key: "addObjects",
     value: function addObjects() {
       // this.geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-      this.geometry = new THREE.PlaneGeometry(0.5, 0.5);
+      this.geometry = new THREE.PlaneGeometry(0.5, 0.5, 100, 100);
+      console.log(this.geometry);
       // this.geometry = new THREE.SphereGeometry( 0.2, 30,  30 );
       // this.material = new THREE.MeshNormalMaterial();
       // this.material = new THREE.MeshBasicMaterial({
@@ -37902,6 +37903,7 @@ var Sketch = /*#__PURE__*/function () {
       // this.material = new THREE.MeshLambertMaterial()
 
       this.material = new THREE.ShaderMaterial({
+        wireframe: true,
         uniforms: {
           time: {
             value: 1.0
@@ -37920,6 +37922,7 @@ var Sketch = /*#__PURE__*/function () {
     key: "render",
     value: function render() {
       this.time += 0.05;
+      this.material.uniforms.time.value = this.time;
       this.mesh.rotation.x = this.time / 2000;
       this.mesh.rotation.y = this.time / 1000;
       this.renderer.render(this.scene, this.camera);
@@ -37957,7 +37960,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55075" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65319" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
