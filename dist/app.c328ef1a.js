@@ -37830,9 +37830,11 @@ var OrbitControls = /*#__PURE__*/function (_EventDispatcher) {
 }(_three.EventDispatcher);
 exports.OrbitControls = OrbitControls;
 },{"three":"node_modules/three/build/three.module.js"}],"shaders/fragment.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nvarying float pulse;\nvoid main() {\n    gl_FragColor = vec4(1.,pulse,0.,1.);\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform sampler2D uTexture;\nvarying float pulse;\nvarying vec2 vUv;\n\nvoid main() {\n//    gl_FragColor = vec4(0.,1.,0.,1.);\n    vec4 myImage = texture(uTexture, vUv + 0.01*sin(vUv*20. + time));\n    float sinePulse = (1. + sin(vUv.x*10. + time))*0.5;\n    gl_FragColor = vec4(vUv,0.,1.);\n    gl_FragColor = vec4(sinePulse, 0.,0.,1.);\n    gl_FragColor = myImage;\n}";
 },{}],"shaders/vertex.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying float pulse;\nvoid main() {\n    vec3 newPosition = position;\n    newPosition.z = 0.1*sin(length(position)*30. + time);\n    pulse = newPosition.z;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying float pulse;\n\nvarying vec2 vUv;\n\nvoid main() {\n    vUv = uv;\n    vec3 newPosition = position;\n    newPosition.z = 0.1*sin(length(position)*30. + time);\n    pulse = newPosition.z;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}";
+},{}],"texture.jpg":[function(require,module,exports) {
+module.exports = "/texture.c370f71b.jpg";
 },{}],"app.js":[function(require,module,exports) {
 "use strict";
 
@@ -37844,6 +37846,7 @@ var THREE = _interopRequireWildcard(require("three"));
 var _OrbitControls = require("three/examples/jsm/controls/OrbitControls.js");
 var _fragment = _interopRequireDefault(require("./shaders/fragment.glsl"));
 var _vertex = _interopRequireDefault(require("./shaders/vertex.glsl"));
+var _texture = _interopRequireDefault(require("./texture.jpg"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -37908,6 +37911,9 @@ var Sketch = /*#__PURE__*/function () {
           time: {
             value: 1.0
           },
+          uTexture: {
+            value: new THREE.TextureLoader().load(_texture.default)
+          },
           resolution: {
             value: new THREE.Vector2()
           }
@@ -37935,7 +37941,7 @@ exports.default = Sketch;
 new Sketch({
   domElement: document.getElementById('container')
 });
-},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shaders/fragment.glsl":"shaders/fragment.glsl","./shaders/vertex.glsl":"shaders/vertex.glsl"}],"../../Users/sstaw/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shaders/fragment.glsl":"shaders/fragment.glsl","./shaders/vertex.glsl":"shaders/vertex.glsl","./texture.jpg":"texture.jpg"}],"../../Users/sstaw/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -37960,7 +37966,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65319" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55989" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
