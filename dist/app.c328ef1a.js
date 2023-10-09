@@ -37830,11 +37830,11 @@ var OrbitControls = /*#__PURE__*/function (_EventDispatcher) {
 }(_three.EventDispatcher);
 exports.OrbitControls = OrbitControls;
 },{"three":"node_modules/three/build/three.module.js"}],"shaders/fragment.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform sampler2D uTexture;\nvarying float pulse;\nvarying vec2 vUv;\n\nvoid main() {\n//    gl_FragColor = vec4(0.,1.,0.,1.);\n    vec4 myImage = texture(uTexture, vUv + 0.01*sin(vUv*20. + time));\n    float sinePulse = (1. + sin(vUv.x*10. + time))*0.5;\n    gl_FragColor = vec4(vUv,0.,1.);\n    gl_FragColor = vec4(sinePulse, 0.,0.,1.);\n    gl_FragColor = myImage;\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform sampler2D uTexture;\nvarying float pulse;\nvarying vec2 vUv;\nvarying vec3 vNormal;\n\nvoid main() {\n//    gl_FragColor = vec4(0.,1.,0.,1.);\n    vec4 myImage = texture(uTexture, vUv + 0.01*sin(vUv*20. + time));\n    float sinePulse = (1. + sin(vUv.x*10. + time))*0.5;\n    gl_FragColor = vec4(vUv,0.,1.);\n    gl_FragColor = vec4(sinePulse, 0.,0.,1.);\n    gl_FragColor = myImage;\n    gl_FragColor = vec4(pulse,0.,0., 1.);\n}";
 },{}],"shaders/vertex.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying float pulse;\n\nvarying vec2 vUv;\n\nvoid main() {\n    vUv = uv;\n    vec3 newPosition = position;\n    newPosition.z = 0.1*sin(length(position)*30. + time);\n    pulse = newPosition.z;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}";
-},{}],"texture.jpg":[function(require,module,exports) {
-module.exports = "/texture.c370f71b.jpg";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying float pulse;\n\nvarying vec2 vUv;\nvarying vec3 vNormal;\n\nvec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}\nfloat permute(float x){return floor(mod(((x*34.0)+1.0)*x, 289.0));}\nvec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}\nfloat taylorInvSqrt(float r){return 1.79284291400159 - 0.85373472095314 * r;}\n\nvec4 grad4(float j, vec4 ip){\n    const vec4 ones = vec4(1.0, 1.0, 1.0, -1.0);\n    vec4 p,s;\n\n    p.xyz = floor( fract (vec3(j) * ip.xyz) * 7.0) * ip.z - 1.0;\n    p.w = 1.5 - dot(abs(p.xyz), ones.xyz);\n    s = vec4(lessThan(p, vec4(0.0)));\n    p.xyz = p.xyz + (s.xyz*2.0 - 1.0) * s.www;\n\n    return p;\n}\n\nfloat snoise(vec4 v){\n    const vec2  C = vec2( 0.138196601125010504,  // (5 - sqrt(5))/20  G4\n    0.309016994374947451); // (sqrt(5) - 1)/4   F4\n    // First corner\n    vec4 i  = floor(v + dot(v, C.yyyy) );\n    vec4 x0 = v -   i + dot(i, C.xxxx);\n\n    // Other corners\n\n    // Rank sorting originally contributed by Bill Licea-Kane, AMD (formerly ATI)\n    vec4 i0;\n\n    vec3 isX = step( x0.yzw, x0.xxx );\n    vec3 isYZ = step( x0.zww, x0.yyz );\n    //  i0.x = dot( isX, vec3( 1.0 ) );\n    i0.x = isX.x + isX.y + isX.z;\n    i0.yzw = 1.0 - isX;\n\n    //  i0.y += dot( isYZ.xy, vec2( 1.0 ) );\n    i0.y += isYZ.x + isYZ.y;\n    i0.zw += 1.0 - isYZ.xy;\n\n    i0.z += isYZ.z;\n    i0.w += 1.0 - isYZ.z;\n\n    // i0 now contains the unique values 0,1,2,3 in each channel\n    vec4 i3 = clamp( i0, 0.0, 1.0 );\n    vec4 i2 = clamp( i0-1.0, 0.0, 1.0 );\n    vec4 i1 = clamp( i0-2.0, 0.0, 1.0 );\n\n    //  x0 = x0 - 0.0 + 0.0 * C\n    vec4 x1 = x0 - i1 + 1.0 * C.xxxx;\n    vec4 x2 = x0 - i2 + 2.0 * C.xxxx;\n    vec4 x3 = x0 - i3 + 3.0 * C.xxxx;\n    vec4 x4 = x0 - 1.0 + 4.0 * C.xxxx;\n\n    // Permutations\n    i = mod(i, 289.0);\n    float j0 = permute( permute( permute( permute(i.w) + i.z) + i.y) + i.x);\n    vec4 j1 = permute( permute( permute( permute (\n    i.w + vec4(i1.w, i2.w, i3.w, 1.0 ))\n    + i.z + vec4(i1.z, i2.z, i3.z, 1.0 ))\n    + i.y + vec4(i1.y, i2.y, i3.y, 1.0 ))\n    + i.x + vec4(i1.x, i2.x, i3.x, 1.0 ));\n    // Gradients\n    // ( 7*7*6 points uniformly over a cube, mapped onto a 4-octahedron.)\n    // 7*7*6 = 294, which is close to the ring size 17*17 = 289.\n\n    vec4 ip = vec4(1.0/294.0, 1.0/49.0, 1.0/7.0, 0.0) ;\n\n    vec4 p0 = grad4(j0,   ip);\n    vec4 p1 = grad4(j1.x, ip);\n    vec4 p2 = grad4(j1.y, ip);\n    vec4 p3 = grad4(j1.z, ip);\n    vec4 p4 = grad4(j1.w, ip);\n\n    // Normalise gradients\n    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n    p0 *= norm.x;\n    p1 *= norm.y;\n    p2 *= norm.z;\n    p3 *= norm.w;\n    p4 *= taylorInvSqrt(dot(p4,p4));\n\n    // Mix contributions from the five corners\n    vec3 m0 = max(0.6 - vec3(dot(x0,x0), dot(x1,x1), dot(x2,x2)), 0.0);\n    vec2 m1 = max(0.6 - vec2(dot(x3,x3), dot(x4,x4)            ), 0.0);\n    m0 = m0 * m0;\n    m1 = m1 * m1;\n    return 49.0 * ( dot(m0*m0, vec3( dot( p0, x0 ), dot( p1, x1 ), dot( p2, x2 )))\n    + dot(m1*m1, vec2( dot( p3, x3 ), dot( p4, x4 ) ) ) ) ;\n\n}\n\nvoid main() {\n    vUv = uv;\n    vNormal = normal;\n    vec3 newPosition = position;\n    float noise = snoise(vec4(normal*40., time*0.1));\n//    newPosition.z = 0.1*sin(length(position)*30. + time);\n    pulse = noise;\n    newPosition = newPosition + 0.4*normal*noise;\n    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);\n}";
+},{}],"water.jpg":[function(require,module,exports) {
+module.exports = "/water.a2752b90.jpg";
 },{}],"app.js":[function(require,module,exports) {
 "use strict";
 
@@ -37846,7 +37846,7 @@ var THREE = _interopRequireWildcard(require("three"));
 var _OrbitControls = require("three/examples/jsm/controls/OrbitControls.js");
 var _fragment = _interopRequireDefault(require("./shaders/fragment.glsl"));
 var _vertex = _interopRequireDefault(require("./shaders/vertex.glsl"));
-var _texture = _interopRequireDefault(require("./texture.jpg"));
+var _water = _interopRequireDefault(require("./water.jpg"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -37896,7 +37896,8 @@ var Sketch = /*#__PURE__*/function () {
     key: "addObjects",
     value: function addObjects() {
       // this.geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-      this.geometry = new THREE.PlaneGeometry(0.5, 0.5, 100, 100);
+      // this.geometry = new THREE.PlaneGeometry( 0.5, 0.5, 100, 100 );
+      this.geometry = new THREE.SphereGeometry(0.5, 100, 100);
       console.log(this.geometry);
       // this.geometry = new THREE.SphereGeometry( 0.2, 30,  30 );
       // this.material = new THREE.MeshNormalMaterial();
@@ -37906,13 +37907,13 @@ var Sketch = /*#__PURE__*/function () {
       // this.material = new THREE.MeshLambertMaterial()
 
       this.material = new THREE.ShaderMaterial({
-        wireframe: true,
+        wireframe: false,
         uniforms: {
           time: {
             value: 1.0
           },
           uTexture: {
-            value: new THREE.TextureLoader().load(_texture.default)
+            value: new THREE.TextureLoader().load(_water.default)
           },
           resolution: {
             value: new THREE.Vector2()
@@ -37941,7 +37942,7 @@ exports.default = Sketch;
 new Sketch({
   domElement: document.getElementById('container')
 });
-},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shaders/fragment.glsl":"shaders/fragment.glsl","./shaders/vertex.glsl":"shaders/vertex.glsl","./texture.jpg":"texture.jpg"}],"../../Users/sstaw/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shaders/fragment.glsl":"shaders/fragment.glsl","./shaders/vertex.glsl":"shaders/vertex.glsl","./water.jpg":"water.jpg"}],"../../Users/sstaw/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -37966,7 +37967,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55989" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60697" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
